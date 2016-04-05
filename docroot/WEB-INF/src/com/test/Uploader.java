@@ -8,6 +8,11 @@
 // echo "This is just a sample line appended to create a big testfile" > dummy.txt
 // for /L %%i in (1,1,5) do type dummy.txt >> dummy.txt
 // for /L %%i in (1,1,10) do copy dummy.txt dummy%%i.txt
+// It turned out we don't need userGroups, only teams/roles.
+// Here is how to create teams:
+// https://www.liferay.com/community/forums/-/message_boards/message/14883029
+
+
 
 package com.test;
 
@@ -23,6 +28,7 @@ import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
@@ -342,7 +348,13 @@ public class Uploader extends MVCPortlet {
 				System.out.println("The user: " + myUser.getScreenName()
 						+ " has been added to " + myUserGroup.getName());
 
+				long groupId = 0;
+				userId = myUser.getUserId();
+				TeamLocalServiceUtil.addTeam(userId, groupId, "team1", "description");
+
 			}
+			
+			
 
 			// Object userGroups;
 			// for (UserGroup userGroup : userGroups) {
