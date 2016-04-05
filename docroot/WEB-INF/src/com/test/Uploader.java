@@ -273,7 +273,7 @@ public class Uploader extends MVCPortlet {
 
 					// long num = System.currentTimeMillis();
 
-					for (int i = 1; i < 3; i++) {
+					for (int i = 1; i <= 3; i++) {
 						try {
 							UserLocalServiceUtil.addUser(
 									PortalUtil.getUserId(actionRequest), // creatorUserId,
@@ -328,15 +328,21 @@ public class Uploader extends MVCPortlet {
 				}
 			}
 
-			// for(int j=1;j<=8;j++){
-			int j = 1;
-			User myUser1 = UserLocalServiceUtil.getUserByEmailAddress(
-					companyId, "test" + j + "@liferay.com");
-			UserGroup myUserGroup1 = UserGroupLocalServiceUtil.addUserGroup(
-					myUser1.getUserId(), companyId, "myUserGroup1",
-					"description", serviceContext);
+			for (int j = 1; j <= 3; j++) {
+				// int j = 1;
 
-			// }
+				User myUser = UserLocalServiceUtil.getUserByEmailAddress(
+						companyId, "test" + j + "@liferay.com");
+				UserGroup myUserGroup = UserGroupLocalServiceUtil.addUserGroup(
+						myUser.getUserId(), companyId, "myUserGroup" + j,
+						"description", serviceContext);
+				System.out.println("The userGroup: myUserGroup" + j
+						+ " has been created");
+				UserGroupLocalServiceUtil.addUserUserGroup(myUser.getUserId(), myUserGroup);
+				System.out.println("The user: " + myUser.getScreenName()
+						+ " has been added to " + myUserGroup.getName());
+
+			}
 
 			// Object userGroups;
 			// for (UserGroup userGroup : userGroups) {
