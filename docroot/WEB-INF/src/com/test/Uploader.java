@@ -20,13 +20,12 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.model.Company;
-import com.liferay.portal.model.Role;
-import com.liferay.portal.model.RoleConstants;
+import com.liferay.portal.model.Group;
+import com.liferay.portal.model.Team;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
-import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
@@ -37,10 +36,8 @@ import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
 import com.liferay.util.bridges.mvc.MVCPortlet;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -348,9 +345,11 @@ public class Uploader extends MVCPortlet {
 				System.out.println("The user: " + myUser.getScreenName()
 						+ " has been added to " + myUserGroup.getName());
 
-				long groupId = 0;
+				
+				//long groupId = 0;
+				long defGroupId = GroupLocalServiceUtil.getGroup(companyId, "Guest").getGroupId();   //note that the default site is called "Guest" and not "Liferay"
 				userId = myUser.getUserId();
-				TeamLocalServiceUtil.addTeam(userId, groupId, "team1", "description");
+				TeamLocalServiceUtil.addTeam(userId, defGroupId, "team"+j, "description");
 
 			}
 			
@@ -409,8 +408,24 @@ public class Uploader extends MVCPortlet {
 						+ myUserGroup.getName());
 				UserGroupLocalServiceUtil.deleteUserGroup(myUserGroup);
 			}
+			
+			
+			// Then, we delete teams:
+			List<Team> myTeams = TeamLocalServiceUtil.getTeams(0, 99999);
+			for (Team myTeam : myTeams) {
+
+				System.out.println("Deleting team "
+						+ myTeam.getName());
+				TeamLocalServiceUtil.deleteTeam(myTeam);
+			}
+
+			
+			
 		}
 
+		
+		
+		
 		System.out.println("Testing ends..");
 	}
 
