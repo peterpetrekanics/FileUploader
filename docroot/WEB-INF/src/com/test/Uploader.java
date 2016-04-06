@@ -331,28 +331,27 @@ public class Uploader extends MVCPortlet {
 				}
 			}
 
-			for (int j = 1; j <= 3; j++) {
-				// int j = 1;
-
-				User myUser = UserLocalServiceUtil.getUserByEmailAddress(
-						companyId, "test" + j + "@liferay.com");
-				UserGroup myUserGroup = UserGroupLocalServiceUtil.addUserGroup(
-						myUser.getUserId(), companyId, "myUserGroup" + j,
-						"description", serviceContext);
-				System.out.println("The userGroup: myUserGroup" + j
-						+ " has been created");
-				UserGroupLocalServiceUtil.addUserUserGroup(myUser.getUserId(), myUserGroup);
-				System.out.println("The user: " + myUser.getScreenName()
-						+ " has been added to " + myUserGroup.getName());
-
-				
-				//long groupId = 0;
-				long defGroupId = GroupLocalServiceUtil.getGroup(companyId, "Guest").getGroupId();   //note that the default site is called "Guest" and not "Liferay"
-				userId = myUser.getUserId();
-				TeamLocalServiceUtil.addTeam(userId, defGroupId, "team"+j, "description");
-
-			}
-			
+			// -- commenting out userGroup and Team creation - START
+//			for (int j = 1; j <= 3; j++) {
+//
+//				User myUser = UserLocalServiceUtil.getUserByEmailAddress(
+//						companyId, "test" + j + "@liferay.com");
+//				UserGroup myUserGroup = UserGroupLocalServiceUtil.addUserGroup(
+//						myUser.getUserId(), companyId, "myUserGroup" + j,
+//						"description", serviceContext);
+//				System.out.println("The userGroup: myUserGroup" + j
+//						+ " has been created");
+//				UserGroupLocalServiceUtil.addUserUserGroup(myUser.getUserId(), myUserGroup);
+//				System.out.println("The user: " + myUser.getScreenName()
+//						+ " has been added to " + myUserGroup.getName());
+//
+//				
+//				long defGroupId = GroupLocalServiceUtil.getGroup(companyId, "Guest").getGroupId();   //note that the default site is called "Guest" and not "Liferay"
+//				userId = myUser.getUserId();
+//				TeamLocalServiceUtil.addTeam(userId, defGroupId, "team"+j, "description");
+//
+//			}
+			// -- commenting out userGroup and Team creation - END			
 			
 
 			// Object userGroups;
