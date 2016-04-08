@@ -11,6 +11,6 @@ name="javaActionMethod">
  <form action="<%=buttonActionURL%>" name="buttonPressed"  method="POST">
 	<input type="submit" name="button1" id="buttonID1" value="UploadFiles"/>
 	<input type="submit" name="button1" id="buttonID2" value="DeleteFiles"/>
-	<input type="submit" name="button1" id="buttonID1" value="CreateRoles"/>
-	<input type="submit" name="button1" id="buttonID2" value="DeleteRoles"/>
+	<input type="submit" name="button1" id="buttonID3" value="CreateRoles"/>
+	<input type="submit" name="button1" id="buttonID4" value="DeleteRoles"/>
 </form>
