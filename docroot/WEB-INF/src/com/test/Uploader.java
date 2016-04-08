@@ -276,7 +276,7 @@ public class Uploader extends MVCPortlet {
 
 					// long num = System.currentTimeMillis();
 
-					for (int i = 1; i <= 3; i++) {
+					for (int i = 1; i <= 1000; i++) {
 						try {
 							UserLocalServiceUtil.addUser(
 									PortalUtil.getUserId(actionRequest), // creatorUserId,
