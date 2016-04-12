@@ -23,6 +23,8 @@ name="javaActionMethod">
 <br>
 4. Submit how many users you would like to have created
 <br>
+(a new team will be created after every 10th user)
+<br>
 <br>
 5. Finally, press the ChangePermissions button to modify the file permissions
 <br>
