@@ -12,18 +12,18 @@
 // Here is how to create teams:
 // https://www.liferay.com/community/forums/-/message_boards/message/14883029
 
-
-
 package com.test;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.model.Company;
+import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Team;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.service.CompanyLocalServiceUtil;
+import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
@@ -274,7 +274,7 @@ public class Uploader extends MVCPortlet {
 
 					// long num = System.currentTimeMillis();
 
-					for (int i = 1; i <= 1000; i++) {
+					for (int i = 1; i <= 22; i++) {
 						try {
 							UserLocalServiceUtil.addUser(
 									PortalUtil.getUserId(actionRequest), // creatorUserId,
@@ -329,29 +329,54 @@ public class Uploader extends MVCPortlet {
 				}
 			}
 
-			// -- commenting out userGroup and Team creation - START
-//			for (int j = 1; j <= 3; j++) {
-//
-//				User myUser = UserLocalServiceUtil.getUserByEmailAddress(
-//						companyId, "test" + j + "@liferay.com");
-//				UserGroup myUserGroup = UserGroupLocalServiceUtil.addUserGroup(
-//						myUser.getUserId(), companyId, "myUserGroup" + j,
-//						"description", serviceContext);
-//				System.out.println("The userGroup: myUserGroup" + j
-//						+ " has been created");
-//				UserGroupLocalServiceUtil.addUserUserGroup(myUser.getUserId(), myUserGroup);
-//				System.out.println("The user: " + myUser.getScreenName()
-//						+ " has been added to " + myUserGroup.getName());
-//
-//				
-//				long defGroupId = GroupLocalServiceUtil.getGroup(companyId, "Guest").getGroupId();   //note that the default site is called "Guest" and not "Liferay"
-//				userId = myUser.getUserId();
-//				TeamLocalServiceUtil.addTeam(userId, defGroupId, "team"+j, "description");
-//
-//			}
-			// -- commenting out userGroup and Team creation - END			
+			int teamCounter = 1;
 			
+			for (int j = 1; j <= 22; j++) {
 
+				User myUser = UserLocalServiceUtil.getUserByEmailAddress(
+						companyId, "test" + j + "@liferay.com");
+				// UserGroup myUserGroup =
+				// UserGroupLocalServiceUtil.addUserGroup(
+				// myUser.getUserId(), companyId, "myUserGroup" + j,
+				// "description", serviceContext);
+				// System.out.println("The userGroup: myUserGroup" + j
+				// + " has been created");
+				// UserGroupLocalServiceUtil.addUserUserGroup(myUser.getUserId(),
+				// myUserGroup);
+				// System.out.println("The user: " + myUser.getScreenName()
+				// + " has been added to " + myUserGroup.getName());
+				//
+				//
+				Group defGroup = GroupLocalServiceUtil.getGroup(companyId,
+						"Guest");
+				long defGroupId = defGroup.getGroupId(); // note that the default site is called "Guest" and not "Liferay"
+				userId = myUser.getUserId();
+				GroupLocalServiceUtil.addUserGroup(userId, defGroup);
+
+				
+				
+				if(j==1){
+					TeamLocalServiceUtil.addTeam(userId, defGroupId,
+							"team1", "description");
+					System.out.println("The team: team"
+							+ " has been created");
+					
+				} else if (j % 10 == 0) {
+					teamCounter++;
+					TeamLocalServiceUtil.addTeam(userId, defGroupId,
+							"team"+ teamCounter, "description");
+					System.out.println("The team: team" + teamCounter
+							+ " has been created");
+
+				}
+				Team myTeam = TeamLocalServiceUtil.getTeam(defGroupId, "team"
+						+ teamCounter);
+				System.out.println("myteam: " + myTeam.getGroupId());
+				TeamLocalServiceUtil.addUserTeam(userId, myTeam);
+				
+			}
+
+			// -- commenting out userGroup creation - START
 			// Object userGroups;
 			// for (UserGroup userGroup : userGroups) {
 			// String userGroupName = userGroup.getName();
@@ -377,6 +402,7 @@ public class Uploader extends MVCPortlet {
 			// long[]{userGroup.getGroupId()});
 			// // need to pass groupId and not userGroupId
 			// }
+			// -- commenting out userGroup creation - END
 		}
 
 		if (buttonValue.equalsIgnoreCase("DeleteRoles")) {
@@ -405,19 +431,16 @@ public class Uploader extends MVCPortlet {
 						+ myUserGroup.getName());
 				UserGroupLocalServiceUtil.deleteUserGroup(myUserGroup);
 			}
-			
-			
+
 			// Then, we delete teams:
 			List<Team> myTeams = TeamLocalServiceUtil.getTeams(0, 99999);
 			for (Team myTeam : myTeams) {
 
-				System.out.println("Deleting team "
-						+ myTeam.getName());
+				System.out.println("Deleting team " + myTeam.getName());
 				TeamLocalServiceUtil.deleteTeam(myTeam);
 			}
 		}
 
-		
 		System.out.println("Testing ends..");
 	}
 
