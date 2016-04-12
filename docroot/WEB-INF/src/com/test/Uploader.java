@@ -16,6 +16,7 @@ package com.test;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.upload.UploadServletRequest;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -67,9 +68,13 @@ public class Uploader extends MVCPortlet {
 		String buttonValue = ParamUtil.get(actionRequest, "button1", "");
 		System.out.println("The following button was pressed: " + buttonValue);
 
-		if (buttonValue.equalsIgnoreCase("UploadFiles")) {
+		String uploadCountString = ParamUtil.get(actionRequest, "uploadCount", "");
+		int uploadCount = 0;
+		if (!uploadCountString.equalsIgnoreCase("")) {
+			System.out.println("upload is valid");
+			uploadCount = Integer.parseInt(uploadCountString);
 
-			for (int fileCount = 1; fileCount <= 35; fileCount++) {
+			for (int fileCount = 1; fileCount <= uploadCount; fileCount++) {
 				File myFile = new File("..//..//a_files//dummy" + fileCount + ".txt");
 				if (myFile.exists()) {
 					ServiceContext serviceContext = new ServiceContext();
@@ -150,7 +155,11 @@ public class Uploader extends MVCPortlet {
 			}
 		}
 
-		if (buttonValue.equalsIgnoreCase("CreateRoles")) {
+		String userCountString = ParamUtil.get(actionRequest, "userCount", "");
+		int userCount = 0;
+		if (!userCountString.equalsIgnoreCase("")) {
+			System.out.println("userCount is valid");
+			userCount = Integer.parseInt(userCountString);
 
 			long userId;
 			long companyId = 0;
@@ -166,7 +175,7 @@ public class Uploader extends MVCPortlet {
 
 					// long num = System.currentTimeMillis();
 
-					for (int i = 1; i <= 22; i++) {
+					for (int i = 1; i <= userCount; i++) {
 						try {
 							UserLocalServiceUtil.addUser(PortalUtil.getUserId(actionRequest), // creatorUserId,
 									companyId, // companyId,
@@ -220,7 +229,7 @@ public class Uploader extends MVCPortlet {
 
 			int teamCounter = 1;
 
-			for (int j = 1; j <= 22; j++) {
+			for (int j = 1; j <= userCount; j++) {
 				User myUser = UserLocalServiceUtil.getUserByEmailAddress(companyId, "test" + j + "@liferay.com");
 				// UserGroup myUserGroup =
 				// UserGroupLocalServiceUtil.addUserGroup(
@@ -232,10 +241,11 @@ public class Uploader extends MVCPortlet {
 				// myUserGroup);
 				// System.out.println("The user: " + myUser.getScreenName()
 				// + " has been added to " + myUserGroup.getName());
-				
-				// note that the default site is called "Guest" and not "Liferay"
+
+				// note that the default site is called "Guest" and not
+				// "Liferay"
 				Group defGroup = GroupLocalServiceUtil.getGroup(companyId, "Guest");
-				long defGroupId = defGroup.getGroupId(); 
+				long defGroupId = defGroup.getGroupId();
 				userId = myUser.getUserId();
 				GroupLocalServiceUtil.addUserGroup(userId, defGroup);
 
