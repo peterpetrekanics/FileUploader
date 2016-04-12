@@ -19,11 +19,20 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.ResourceConstants;
+import com.liferay.portal.model.ResourcePermission;
+import com.liferay.portal.model.ResourcePermissionModel;
+import com.liferay.portal.model.Role;
+import com.liferay.portal.model.RoleConstants;
+import com.liferay.portal.model.RoleModel;
 import com.liferay.portal.model.Team;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
+import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portal.service.ResourcePermissionLocalServiceUtil;
+import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
@@ -46,8 +55,7 @@ import javax.portlet.PortletException;
  */
 public class Uploader extends MVCPortlet {
 
-	public void javaActionMethod(ActionRequest actionRequest,
-			ActionResponse actionResponse) throws IOException,
+	public void javaActionMethod(ActionRequest actionRequest, ActionResponse actionResponse) throws IOException,
 			PortletException, SystemException, PortalException {
 		System.out.println("Testing starts..");
 
@@ -55,6 +63,77 @@ public class Uploader extends MVCPortlet {
 		System.out.println("The following button was pressed: " + buttonValue);
 
 		if (buttonValue.equalsIgnoreCase("UploadFiles")) {
+
+			int count = DLFileEntryLocalServiceUtil.getFileEntriesCount();
+			System.out.println("there are " + count + " files on the server");
+			List<DLFileEntry> dlFileEntries = DLFileEntryLocalServiceUtil.getFileEntries(0, count);
+
+			for (DLFileEntry dlFileEntry : dlFileEntries) {
+				String name = dlFileEntry.getTitle();
+				long feID = dlFileEntry.getFileEntryId();
+				String resourceName = DLFileEntry.class.getName();
+				String fileEntryId = feID + "";
+				long companyId = dlFileEntry.getCompanyId();
+				// Role user = RoleLocalServiceUtil.getRole(companyId,
+				// RoleConstants.USER);
+				Role siteMemberRole = RoleLocalServiceUtil.getRole(companyId, RoleConstants.SITE_MEMBER);
+				Role guestRole = RoleLocalServiceUtil.getRole(companyId, RoleConstants.GUEST);
+
+				if (name.equalsIgnoreCase("koal")) {
+					System.out.println("filename = " + name);
+
+					String[] actionIds = new String[1];
+					actionIds[0] = "VIEW";
+
+					// ResourcePermissionLocalServiceUtil.setResourcePermissions(dlFileEntry.getCompanyId(),
+					// "com.liferay.portlet.documentlibrary.model.DLFileEntry",
+					// 4,
+					// primKeyDLFE, user.getRoleId(), actionIds);
+					// System.out.println("milyen user: " + user);
+
+					if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
+							ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId(),
+							ActionKeys.VIEW)) {
+						System.out.println("true, site member has permissions");
+					}
+
+					Group defaultGroup = GroupLocalServiceUtil.getGroup(companyId, "Guest");
+					Team myTestTeam = TeamLocalServiceUtil.getTeam(defaultGroup.getGroupId(), "team3");
+					// System.out.println("teamrole ID: " +
+					// myTestTeam.getRole().getRoleId());
+
+					if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
+							ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, myTestTeam.getRole().getRoleId(),
+							ActionKeys.VIEW)) {
+						System.out.println("the team3 has permissions");
+
+						ResourcePermission permission = null;
+						if (ResourcePermissionLocalServiceUtil
+								.hasResourcePermission(companyId, resourceName, ResourceConstants.SCOPE_INDIVIDUAL,
+										fileEntryId, guestRole.getRoleId(), ActionKeys.VIEW)) {
+							permission = ResourcePermissionLocalServiceUtil.getResourcePermission(companyId,
+									resourceName, ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId,
+									guestRole.getRoleId());
+							permission.setActionIds(0);
+							ResourcePermissionLocalServiceUtil.updateResourcePermission(permission);
+						}
+
+						if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
+								ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId(),
+								ActionKeys.VIEW)) {
+							permission = ResourcePermissionLocalServiceUtil.getResourcePermission(companyId,
+									resourceName, ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId,
+									siteMemberRole.getRoleId());
+							permission.setActionIds(0);
+							ResourcePermissionLocalServiceUtil.updateResourcePermission(permission);
+						}
+						
+						System.out.println("and now guest and sitememb view p is gone");
+
+					}
+
+				}
+			}
 
 			// ThemeDisplay themeDisplay =
 			// (ThemeDisplay)request.getAttribute(WebKeys.THEME_DISPLAY);
@@ -76,7 +155,6 @@ public class Uploader extends MVCPortlet {
 			// ServiceContextFactory.getInstance(DLFileEntry.class.getName(),
 			// request);
 			// } catch (SystemException e) {
-			// // TODO Auto-generated catch block
 			// e.printStackTrace();
 			// }
 			// } catch (PortalException e3) {
@@ -109,7 +187,6 @@ public class Uploader extends MVCPortlet {
 			// ServiceContextFactory.getInstance(DLFileEntry.class.getName(),
 			// request);
 			// } catch (SystemException e) {
-			// // TODO Auto-generated catch block
 			// e.printStackTrace();
 			// }
 			// } catch (PortalException e3) {
@@ -164,7 +241,6 @@ public class Uploader extends MVCPortlet {
 			// description, changeLog, 0, fieldsMap, submissionFile, fis, size,
 			// serviceContext);
 			// } catch (SystemException e1) {
-			// // TODO Auto-generated catch block
 			// e1.printStackTrace();
 			// }
 			// } catch (PortalException e1) {
@@ -179,7 +255,6 @@ public class Uploader extends MVCPortlet {
 			// submissionFileName, contentType, title, description, changeLog,
 			// false, 0, fieldsMap, submissionFile, fis, size, serviceContext);
 			// } catch (SystemException e1) {
-			// // TODO Auto-generated catch block
 			// e1.printStackTrace();
 			// }
 			// } catch (PortalException e1) {
@@ -198,7 +273,6 @@ public class Uploader extends MVCPortlet {
 			// user = RoleLocalServiceUtil.getRole(dlf.getCompanyId(),
 			// RoleConstants.USER);
 			// } catch (SystemException e1) {
-			// // TODO Auto-generated catch block
 			// e1.printStackTrace();
 			// }
 			// } catch (PortalException e1) {
@@ -211,7 +285,6 @@ public class Uploader extends MVCPortlet {
 			// "com.liferay.portlet.documentlibrary.model.DLFileEntry", 4,
 			// primKeyDLFE, user.getRoleId(), actionIds);
 			// } catch (SystemException e1) {
-			// // TODO Auto-generated catch block
 			// e1.printStackTrace();
 			// }
 			// } catch (PortalException e1) {
@@ -248,12 +321,10 @@ public class Uploader extends MVCPortlet {
 
 			int count = DLFileEntryLocalServiceUtil.getFileEntriesCount();
 			System.out.println("there are " + count + " files to be deleted");
-			List<DLFileEntry> dlFileEntries = DLFileEntryLocalServiceUtil
-					.getFileEntries(0, count);
+			List<DLFileEntry> dlFileEntries = DLFileEntryLocalServiceUtil.getFileEntries(0, count);
 
 			for (DLFileEntry dlFileEntry : dlFileEntries) {
-				DLFileEntryLocalServiceUtil.deleteFileEntry(dlFileEntry
-						.getFileEntryId());
+				DLFileEntryLocalServiceUtil.deleteFileEntry(dlFileEntry.getFileEntryId());
 			}
 		}
 
@@ -268,16 +339,14 @@ public class Uploader extends MVCPortlet {
 			try {
 				try {
 
-					final Company company = CompanyLocalServiceUtil
-							.getCompanies().iterator().next();
+					final Company company = CompanyLocalServiceUtil.getCompanies().iterator().next();
 					companyId = company.getCompanyId();
 
 					// long num = System.currentTimeMillis();
 
 					for (int i = 1; i <= 22; i++) {
 						try {
-							UserLocalServiceUtil.addUser(
-									PortalUtil.getUserId(actionRequest), // creatorUserId,
+							UserLocalServiceUtil.addUser(PortalUtil.getUserId(actionRequest), // creatorUserId,
 									companyId, // companyId,
 									false, // autoPassword,
 									"test", // password1,
@@ -304,8 +373,7 @@ public class Uploader extends MVCPortlet {
 									null, // userGroupIds,
 									false, // sendEmail,
 									null);
-							System.out.println("The user: User" + i
-									+ " has been created");
+							System.out.println("The user: User" + i + " has been created");
 
 						} catch (Exception e) {
 							System.out.println("exception" + e);
@@ -321,8 +389,7 @@ public class Uploader extends MVCPortlet {
 				}
 			} finally {
 				try {
-					System.out.println("User count after: "
-							+ UserLocalServiceUtil.getUsersCount());
+					System.out.println("User count after: " + UserLocalServiceUtil.getUsersCount());
 				} catch (SystemException e) {
 
 					e.printStackTrace();
@@ -330,11 +397,10 @@ public class Uploader extends MVCPortlet {
 			}
 
 			int teamCounter = 1;
-			
+
 			for (int j = 1; j <= 22; j++) {
 
-				User myUser = UserLocalServiceUtil.getUserByEmailAddress(
-						companyId, "test" + j + "@liferay.com");
+				User myUser = UserLocalServiceUtil.getUserByEmailAddress(companyId, "test" + j + "@liferay.com");
 				// UserGroup myUserGroup =
 				// UserGroupLocalServiceUtil.addUserGroup(
 				// myUser.getUserId(), companyId, "myUserGroup" + j,
@@ -347,33 +413,28 @@ public class Uploader extends MVCPortlet {
 				// + " has been added to " + myUserGroup.getName());
 				//
 				//
-				Group defGroup = GroupLocalServiceUtil.getGroup(companyId,
-						"Guest");
-				long defGroupId = defGroup.getGroupId(); // note that the default site is called "Guest" and not "Liferay"
+				Group defGroup = GroupLocalServiceUtil.getGroup(companyId, "Guest");
+				long defGroupId = defGroup.getGroupId(); // note that the
+															// default site is
+															// called "Guest"
+															// and not "Liferay"
 				userId = myUser.getUserId();
 				GroupLocalServiceUtil.addUserGroup(userId, defGroup);
 
-				
-				
-				if(j==1){
-					TeamLocalServiceUtil.addTeam(userId, defGroupId,
-							"team1", "description");
-					System.out.println("The team: team"
-							+ " has been created");
-					
+				if (j == 1) {
+					TeamLocalServiceUtil.addTeam(userId, defGroupId, "team1", "description");
+					System.out.println("The team: team" + " has been created");
+
 				} else if (j % 10 == 0) {
 					teamCounter++;
-					TeamLocalServiceUtil.addTeam(userId, defGroupId,
-							"team"+ teamCounter, "description");
-					System.out.println("The team: team" + teamCounter
-							+ " has been created");
+					TeamLocalServiceUtil.addTeam(userId, defGroupId, "team" + teamCounter, "description");
+					System.out.println("The team: team" + teamCounter + " has been created");
 
 				}
-				Team myTeam = TeamLocalServiceUtil.getTeam(defGroupId, "team"
-						+ teamCounter);
-				System.out.println("myteam: " + myTeam.getGroupId());
+				Team myTeam = TeamLocalServiceUtil.getTeam(defGroupId, "team" + teamCounter);
+				System.out.println("myteam: " + myTeam.getName());
 				TeamLocalServiceUtil.addUserTeam(userId, myTeam);
-				
+
 			}
 
 			// -- commenting out userGroup creation - START
@@ -410,25 +471,21 @@ public class Uploader extends MVCPortlet {
 			// First, we delete all non-admin users:
 			List<User> myUsers = UserLocalServiceUtil.getUsers(0, 99999);
 			for (User user : myUsers) {
-				if (user.isDefaultUser()
-						|| PortalUtil.isOmniadmin(user.getUserId())) {
+				if (user.isDefaultUser() || PortalUtil.isOmniadmin(user.getUserId())) {
 					System.out.println("Skipping user " + user.getScreenName());
 				} else {
 					User userToDelete = user;
 
-					System.out.println("Deleting user "
-							+ userToDelete.getScreenName());
+					System.out.println("Deleting user " + userToDelete.getScreenName());
 					UserLocalServiceUtil.deleteUser(userToDelete);
 				}
 			}
 
 			// Then, we delete userGroups:
-			List<UserGroup> myUserGroups = UserGroupLocalServiceUtil
-					.getUserGroups(0, 99999);
+			List<UserGroup> myUserGroups = UserGroupLocalServiceUtil.getUserGroups(0, 99999);
 			for (UserGroup myUserGroup : myUserGroups) {
 
-				System.out.println("Deleting userGroup "
-						+ myUserGroup.getName());
+				System.out.println("Deleting userGroup " + myUserGroup.getName());
 				UserGroupLocalServiceUtil.deleteUserGroup(myUserGroup);
 			}
 
