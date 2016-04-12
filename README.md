@@ -11,7 +11,10 @@ I wrote instructions on the portlet's view.jsp to make it easier to use.
 I have used this .bat file to create 1000 text files (2 MB each):
 
 echo "This is just a sample line appended to create a big testfile" > dummy.txt
+
 for /L %%i in (1,1,14) do type dummy.txt >> dummy.txt
+
 for /L %%i in (1,1,1000) do copy dummy.txt dummy%%i.txt
+
 
 Feel free to use the portlet for testing
