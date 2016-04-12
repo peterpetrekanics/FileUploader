@@ -1,12 +1,12 @@
 // TODO: create 1000 users. Create 100 user groups and add 10 users to each groups.
 // What about teams? + How to create / define roles ?
 // The role/team is only allowed to access a small number of the created documents.
-// Use the dummy script to create 1100 documents, 3 MB each.
+// Use the dummy script to create 1000 documents, 2 MB each.
 // We should use this LPP when writing the uploading code:
 // https://issues.liferay.com/browse/LPP-19999
-// Contents of the dummy.txt:
+// Contents of the dummy.bat:
 // echo "This is just a sample line appended to create a big testfile" > dummy.txt
-// for /L %%i in (1,1,5) do type dummy.txt >> dummy.txt
+// for /L %%i in (1,1,14) do type dummy.txt >> dummy.txt
 // for /L %%i in (1,1,10) do copy dummy.txt dummy%%i.txt
 // It turned out we don't need userGroups, only teams/roles.
 // Here is how to create teams:
@@ -16,15 +16,15 @@ package com.test;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.ResourcePermission;
-import com.liferay.portal.model.ResourcePermissionModel;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.RoleConstants;
-import com.liferay.portal.model.RoleModel;
 import com.liferay.portal.model.Team;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
@@ -39,12 +39,17 @@ import com.liferay.portal.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
+import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
+import com.liferay.portlet.dynamicdatamapping.storage.Fields;
 import com.liferay.util.bridges.mvc.MVCPortlet;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -64,259 +69,76 @@ public class Uploader extends MVCPortlet {
 
 		if (buttonValue.equalsIgnoreCase("UploadFiles")) {
 
-			int count = DLFileEntryLocalServiceUtil.getFileEntriesCount();
-			System.out.println("there are " + count + " files on the server");
-			List<DLFileEntry> dlFileEntries = DLFileEntryLocalServiceUtil.getFileEntries(0, count);
+			for (int fileCount = 1; fileCount <= 35; fileCount++) {
+				File myFile = new File("..//..//a_files//dummy" + fileCount + ".txt");
+				if (myFile.exists()) {
+					ServiceContext serviceContext = new ServiceContext();
+					serviceContext.setAddGroupPermissions(false);
+					serviceContext.setAddGuestPermissions(false);
+					serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
 
-			for (DLFileEntry dlFileEntry : dlFileEntries) {
-				String name = dlFileEntry.getTitle();
-				long feID = dlFileEntry.getFileEntryId();
-				String resourceName = DLFileEntry.class.getName();
-				String fileEntryId = feID + "";
-				long companyId = dlFileEntry.getCompanyId();
-				// Role user = RoleLocalServiceUtil.getRole(companyId,
-				// RoleConstants.USER);
-				Role siteMemberRole = RoleLocalServiceUtil.getRole(companyId, RoleConstants.SITE_MEMBER);
-				Role guestRole = RoleLocalServiceUtil.getRole(companyId, RoleConstants.GUEST);
+					DLFileEntry fileEntry = null;
 
-				if (name.equalsIgnoreCase("koal")) {
-					System.out.println("filename = " + name);
+					// DLAppLocalServiceUtil.addFileEntry(userId, repositoryId,
+					// folderId, sourceFileName,
+					// mimeType, title, description, changeLog, file,
+					// serviceContext)
 
-					String[] actionIds = new String[1];
-					actionIds[0] = "VIEW";
+					long userId = 0;
+					long groupId = 0;
+					long repositoryId = 0;
+					long folderId = 0;
+					String sourceFileName = null;
+					String mimeType = null;
+					String title = null;
+					String description = null;
+					String changeLog = null;
+					long fileEntryTypeId = 0;
+					Map<String, Fields> fieldsMap = null;
+					File file = null;
+					InputStream is = null;
+					long size = 0;
+					long companyId;
+					Group defGroup;
+					final Company company = CompanyLocalServiceUtil.getCompanies().iterator().next();
 
-					// ResourcePermissionLocalServiceUtil.setResourcePermissions(dlFileEntry.getCompanyId(),
-					// "com.liferay.portlet.documentlibrary.model.DLFileEntry",
-					// 4,
-					// primKeyDLFE, user.getRoleId(), actionIds);
-					// System.out.println("milyen user: " + user);
+					try {
+						companyId = company.getCompanyId();
+						userId = UserLocalServiceUtil.getUserIdByEmailAddress(companyId, "test@liferay.com");
+						defGroup = GroupLocalServiceUtil.getGroup(companyId, "Guest");
+						groupId = defGroup.getGroupId();
+						repositoryId = groupId;
+						sourceFileName = myFile.getName();
+						mimeType = MimeTypesUtil.getContentType(myFile);
+						title = sourceFileName;
+						description = "description";
+						changeLog = "";
+						fileEntryTypeId = 0;
+						fieldsMap = null;
+						file = myFile;
+						is = null;
+						size = file.length();
 
-					if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
-							ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId(),
-							ActionKeys.VIEW)) {
-						System.out.println("true, site member has permissions");
+					} catch (PortalException e1) {
+						e1.printStackTrace();
+					} catch (SystemException e1) {
+						e1.printStackTrace();
 					}
 
-					Group defaultGroup = GroupLocalServiceUtil.getGroup(companyId, "Guest");
-					Team myTestTeam = TeamLocalServiceUtil.getTeam(defaultGroup.getGroupId(), "team3");
-					// System.out.println("teamrole ID: " +
-					// myTestTeam.getRole().getRoleId());
+					try {
+						DLAppLocalServiceUtil.addFileEntry(userId, repositoryId, folderId, sourceFileName, mimeType,
+								title, description, changeLog, file, serviceContext);
 
-					if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
-							ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, myTestTeam.getRole().getRoleId(),
-							ActionKeys.VIEW)) {
-						System.out.println("the team3 has permissions");
-
-						ResourcePermission permission = null;
-						if (ResourcePermissionLocalServiceUtil
-								.hasResourcePermission(companyId, resourceName, ResourceConstants.SCOPE_INDIVIDUAL,
-										fileEntryId, guestRole.getRoleId(), ActionKeys.VIEW)) {
-							permission = ResourcePermissionLocalServiceUtil.getResourcePermission(companyId,
-									resourceName, ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId,
-									guestRole.getRoleId());
-							permission.setActionIds(0);
-							ResourcePermissionLocalServiceUtil.updateResourcePermission(permission);
-						}
-
-						if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
-								ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId(),
-								ActionKeys.VIEW)) {
-							permission = ResourcePermissionLocalServiceUtil.getResourcePermission(companyId,
-									resourceName, ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId,
-									siteMemberRole.getRoleId());
-							permission.setActionIds(0);
-							ResourcePermissionLocalServiceUtil.updateResourcePermission(permission);
-						}
-						
-						System.out.println("and now guest and sitememb view p is gone");
-
+					} catch (PortalException e) {
+						e.printStackTrace();
+					} catch (SystemException e) {
+						e.printStackTrace();
 					}
-
+					System.out.println("This file was added: " + title);
 				}
 			}
-
-			// ThemeDisplay themeDisplay =
-			// (ThemeDisplay)request.getAttribute(WebKeys.THEME_DISPLAY);
-			// SessionMessages.add(request, PortalUtil.getPortletId(request) +
-			// SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);
-			// long userId = themeDisplay.getUserId();
-			// long groupId = themeDisplay.getScopeGroupId();
-			//
-			// UploadPortletRequest uploadRequest =
-			// PortalUtil.getUploadPortletRequest(request);
-			//
-			// long folderId = 0;
-			//
-			// java.io.File submissionFile = null;
-			// String submissionFileName = "";
-			// try {
-			// try {
-			// ServiceContext serviceContext =
-			// ServiceContextFactory.getInstance(DLFileEntry.class.getName(),
-			// request);
-			// } catch (SystemException e) {
-			// e.printStackTrace();
-			// }
-			// } catch (PortalException e3) {
-			// e3.printStackTrace();
-			// }
-			//
-			// String contentType = "";
-			// String changeLog = "";
-			// Map<String, Fields> fieldsMap = new HashMap<String, Fields>();
-			// long size = 0;
-			//
-			// if (uploadRequest != null) {
-			//
-			// submissionFileName =
-			// uploadRequest.getFileName("uploadFileForMessage");
-			// submissionFile = uploadRequest.getFile("uploadFileForMessage");
-			// contentType =
-			// uploadRequest.getContentType("uploadFileForMessage");
-			// changeLog = ParamUtil.getString(request, "changeLog");
-			// size = uploadRequest.getSize("uploadFileForMessage");
-			//
-			// }
-			//
-			// if(!submissionFileName.equals("")){
-			//
-			// ServiceContext serviceContext = null;
-			// try {
-			// try {
-			// serviceContext =
-			// ServiceContextFactory.getInstance(DLFileEntry.class.getName(),
-			// request);
-			// } catch (SystemException e) {
-			// e.printStackTrace();
-			// }
-			// } catch (PortalException e3) {
-			// e3.printStackTrace();
-			// }
-			//
-			// String title = submissionFileName;
-			// String description = "Message Media";
-			// DLFileEntry dlf = null;
-			// long realUserId = themeDisplay.getRealUserId();
-			//
-			// FileInputStream fis = null;
-			//
-			// try {
-			// fis = new FileInputStream(submissionFile);
-			// } catch (FileNotFoundException e1) {
-			// e1.printStackTrace();
-			// }
-			//
-			// try {
-			//
-			// dlf = DLFileEntryLocalServiceUtil.addFileEntry(realUserId,
-			// groupId, groupId, 0, submissionFileName, contentType, title,
-			// description, changeLog, 0, fieldsMap, submissionFile, fis, size,
-			// serviceContext);
-			// long feID = dlf.getFileEntryId();
-			// DLFileEntryLocalServiceUtil.updateFileEntry(realUserId, feID,
-			// submissionFileName, contentType, title, description, changeLog,
-			// false, 0, fieldsMap, submissionFile, fis, size, serviceContext);
-			//
-			// String primKeyDLFE = dlf.getPrimaryKey() + "";
-			// String[] actionIds = new String[1];
-			//
-			// actionIds[0] = "VIEW";
-			//
-			// Role user = RoleLocalServiceUtil.getRole(dlf.getCompanyId(),
-			// RoleConstants.USER);
-			// ResourcePermissionLocalServiceUtil.setResourcePermissions(dlf.getCompanyId(),
-			// "com.liferay.portlet.documentlibrary.model.DLFileEntry", 4,
-			// primKeyDLFE, user.getRoleId(), actionIds);
-			//
-			// } catch (DuplicateFileException e) {
-			//
-			// int randomNumber = randInt(1000, 9999);
-			//
-			// title = title + "_" + randomNumber;
-			//
-			// try {
-			// try {
-			// dlf = DLFileEntryLocalServiceUtil.addFileEntry(realUserId,
-			// groupId, groupId, 0, submissionFileName, contentType, title,
-			// description, changeLog, 0, fieldsMap, submissionFile, fis, size,
-			// serviceContext);
-			// } catch (SystemException e1) {
-			// e1.printStackTrace();
-			// }
-			// } catch (PortalException e1) {
-			// e1.printStackTrace();
-			// }
-			//
-			// long feID = dlf.getFileEntryId();
-			//
-			// try {
-			// try {
-			// DLFileEntryLocalServiceUtil.updateFileEntry(realUserId, feID,
-			// submissionFileName, contentType, title, description, changeLog,
-			// false, 0, fieldsMap, submissionFile, fis, size, serviceContext);
-			// } catch (SystemException e1) {
-			// e1.printStackTrace();
-			// }
-			// } catch (PortalException e1) {
-			// e1.printStackTrace();
-			// }
-			//
-			// String[] actionIds = new String[1];
-			//
-			// actionIds[0] = "VIEW";
-			// String primKeyDLFE = dlf.getPrimaryKey() + "";
-			//
-			// Role user = null;
-			//
-			// try {
-			// try {
-			// user = RoleLocalServiceUtil.getRole(dlf.getCompanyId(),
-			// RoleConstants.USER);
-			// } catch (SystemException e1) {
-			// e1.printStackTrace();
-			// }
-			// } catch (PortalException e1) {
-			// e1.printStackTrace();
-			// }
-			//
-			// try {
-			// try {
-			// ResourcePermissionLocalServiceUtil.setResourcePermissions(dlf.getCompanyId(),
-			// "com.liferay.portlet.documentlibrary.model.DLFileEntry", 4,
-			// primKeyDLFE, user.getRoleId(), actionIds);
-			// } catch (SystemException e1) {
-			// e1.printStackTrace();
-			// }
-			// } catch (PortalException e1) {
-			// e1.printStackTrace();
-			// }
-			//
-			// } catch (PortalException e) {
-			// e.printStackTrace();
-			// } catch (SystemException e) {
-			// e.printStackTrace();
-			// }
-			//
-			// titleURL = "/documents/" + groupId + "/" + dlf.getFolderId() +
-			// "/" + dlf.getTitle();
-			//
-			// }
-			//
-			// System.out.println("OPEN IMAGE FROM THIS PATH: " + titleURL);
-			//
-			// }
-			//
-			// public static int randInt(int min, int max) {
-			//
-			// Random rand = new Random();
-			//
-			// int randomNum = rand.nextInt((max - min) + 1) + min;
-			//
-			// return randomNum;
-			//
-			// }
-
 		}
+
 		if (buttonValue.equalsIgnoreCase("DeleteFiles")) {
 
 			int count = DLFileEntryLocalServiceUtil.getFileEntriesCount();
@@ -399,7 +221,6 @@ public class Uploader extends MVCPortlet {
 			int teamCounter = 1;
 
 			for (int j = 1; j <= 22; j++) {
-
 				User myUser = UserLocalServiceUtil.getUserByEmailAddress(companyId, "test" + j + "@liferay.com");
 				// UserGroup myUserGroup =
 				// UserGroupLocalServiceUtil.addUserGroup(
@@ -411,13 +232,10 @@ public class Uploader extends MVCPortlet {
 				// myUserGroup);
 				// System.out.println("The user: " + myUser.getScreenName()
 				// + " has been added to " + myUserGroup.getName());
-				//
-				//
+				
+				// note that the default site is called "Guest" and not "Liferay"
 				Group defGroup = GroupLocalServiceUtil.getGroup(companyId, "Guest");
-				long defGroupId = defGroup.getGroupId(); // note that the
-															// default site is
-															// called "Guest"
-															// and not "Liferay"
+				long defGroupId = defGroup.getGroupId(); 
 				userId = myUser.getUserId();
 				GroupLocalServiceUtil.addUserGroup(userId, defGroup);
 
@@ -490,7 +308,8 @@ public class Uploader extends MVCPortlet {
 			}
 
 			// Then, we delete teams:
-			List<Team> myTeams = TeamLocalServiceUtil.getTeams(0, 99999);
+			int teamCount = TeamLocalServiceUtil.getTeamsCount();
+			List<Team> myTeams = TeamLocalServiceUtil.getTeams(0, teamCount);
 			for (Team myTeam : myTeams) {
 
 				System.out.println("Deleting team " + myTeam.getName());
@@ -498,7 +317,85 @@ public class Uploader extends MVCPortlet {
 			}
 		}
 
+		if (buttonValue.equalsIgnoreCase("ChangePermissions")) {
+
+			int DLFileCount = DLFileEntryLocalServiceUtil.getFileEntriesCount();
+			System.out.println("there are " + DLFileCount + " files on the server");
+			List<DLFileEntry> dlFileEntries = DLFileEntryLocalServiceUtil.getFileEntries(0, DLFileCount);
+			int fileEntryCounter = 1;
+			int teamCounter = 1;
+			int teamCount = TeamLocalServiceUtil.getTeamsCount();
+			List<Team> myTeams = TeamLocalServiceUtil.getTeams(0, teamCount);
+			Team myTestTeam;
+			int scope;
+			String primKey;
+
+			for (DLFileEntry dlFileEntry : dlFileEntries) {
+				String name = dlFileEntry.getTitle();
+				long feID = dlFileEntry.getFileEntryId();
+				String resourceName = DLFileEntry.class.getName();
+				String fileEntryId = feID + "";
+				long companyId = dlFileEntry.getCompanyId();
+				// Role user = RoleLocalServiceUtil.getRole(companyId,
+				// RoleConstants.USER);
+				Role siteMemberRole = RoleLocalServiceUtil.getRole(companyId, RoleConstants.SITE_MEMBER);
+				Role guestRole = RoleLocalServiceUtil.getRole(companyId, RoleConstants.GUEST);
+				Group defaultGroup = GroupLocalServiceUtil.getGroup(companyId, "Guest");
+
+				System.out.println("filename = " + name);
+
+				String[] actionIds = new String[1];
+				actionIds[0] = "VIEW";
+
+				scope = ResourceConstants.SCOPE_INDIVIDUAL;
+				primKey = dlFileEntry.getPrimaryKey() + "";
+
+				if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
+						ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId(), ActionKeys.VIEW)) {
+					System.out.println("true, site member has permissions");
+				}
+
+				myTestTeam = TeamLocalServiceUtil.getTeam(defaultGroup.getGroupId(), "team" + teamCounter);
+				// System.out.println("teamrole ID: " +
+				// myTestTeam.getRole().getRoleId());
+
+				ResourcePermission permission = null;
+				// Removing Guest view permissions, if any
+				if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
+						ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, guestRole.getRoleId(), ActionKeys.VIEW)) {
+					permission = ResourcePermissionLocalServiceUtil.getResourcePermission(companyId, resourceName,
+							ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, guestRole.getRoleId());
+					permission.setActionIds(0);
+					ResourcePermissionLocalServiceUtil.updateResourcePermission(permission);
+				}
+
+				// Removing SiteMember view permissions, if any
+				if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
+						ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId(), ActionKeys.VIEW)) {
+					permission = ResourcePermissionLocalServiceUtil.getResourcePermission(companyId, resourceName,
+							ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId());
+					permission.setActionIds(0);
+					ResourcePermissionLocalServiceUtil.updateResourcePermission(permission);
+				}
+
+				// Adding Team view permissions
+				if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
+						ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, myTestTeam.getRole().getRoleId(),
+						ActionKeys.VIEW)) {
+					System.out.println("the team3 has permissions");
+				} else {
+					ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, resourceName, scope, primKey,
+							myTestTeam.getRole().getRoleId(), actionIds);
+				}
+
+				fileEntryCounter++;
+				teamCounter++;
+				if (teamCounter > teamCount) {
+					teamCounter = 1;
+				}
+			}
+		}
+
 		System.out.println("Testing ends..");
 	}
-
 }
