@@ -262,6 +262,7 @@ public class Uploader extends MVCPortlet {
 				Team myTeam = TeamLocalServiceUtil.getTeam(defGroupId, "team" + teamCounter);
 				System.out.println("myteam: " + myTeam.getName());
 				TeamLocalServiceUtil.addUserTeam(userId, myTeam);
+				System.out.println("the user: " + userId + " has been added to team: " + myTeam);
 
 			}
 
@@ -362,7 +363,7 @@ public class Uploader extends MVCPortlet {
 
 				if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
 						ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, siteMemberRole.getRoleId(), ActionKeys.VIEW)) {
-					System.out.println("true, site member has permissions");
+					System.out.println("true, site member has view permission");
 				}
 
 				myTestTeam = TeamLocalServiceUtil.getTeam(defaultGroup.getGroupId(), "team" + teamCounter);
@@ -392,7 +393,7 @@ public class Uploader extends MVCPortlet {
 				if (ResourcePermissionLocalServiceUtil.hasResourcePermission(companyId, resourceName,
 						ResourceConstants.SCOPE_INDIVIDUAL, fileEntryId, myTestTeam.getRole().getRoleId(),
 						ActionKeys.VIEW)) {
-					System.out.println("the team3 has permissions");
+					System.out.println("this team already has permissions: " + teamCounter);
 				} else {
 					ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, resourceName, scope, primKey,
 							myTestTeam.getRole().getRoleId(), actionIds);
