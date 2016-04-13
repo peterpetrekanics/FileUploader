@@ -18,3 +18,14 @@ for /L %%i in (1,1,1000) do copy dummy.txt dummy%%i.txt
 
 
 Feel free to use the portlet for testing
+
+---
+
+In case of:
+
+java.lang.IllegalStateException: this writer hit an OutOfMemoryError; cannot commit
+
+raise xmx memory to 2048 in setenv.bat and add the following properties in your portal-ext.properties:
+
+lucene.commit.batch.size=100
+lucene.commit.time.interval=100
