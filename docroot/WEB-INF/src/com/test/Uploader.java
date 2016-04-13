@@ -152,6 +152,7 @@ public class Uploader extends MVCPortlet {
 
 			for (DLFileEntry dlFileEntry : dlFileEntries) {
 				DLFileEntryLocalServiceUtil.deleteFileEntry(dlFileEntry.getFileEntryId());
+				System.out.println(dlFileEntry.getTitle() + " has been deleted");
 			}
 		}
 
