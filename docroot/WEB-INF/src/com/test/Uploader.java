@@ -263,7 +263,7 @@ public class Uploader extends MVCPortlet {
 				Team myTeam = TeamLocalServiceUtil.getTeam(defGroupId, "team" + teamCounter);
 				System.out.println("myteam: " + myTeam.getName());
 				TeamLocalServiceUtil.addUserTeam(userId, myTeam);
-				System.out.println("the user: " + userId + " has been added to team: " + myTeam);
+				System.out.println("the user: " + userId + " has been added to team: " + myTeam.getName());
 
 			}
 
